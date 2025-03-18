@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 from cryptography.fernet import Fernet
 
 # Secret key for signing JWT tokens (You should store this securely in the .env file)
-SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")
+SECRET_KEY = os.getenv("SECRET_KEY", "supermarket")
 
 # Encryption key for securing sensitive data (like passwords)
-ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", "your_encryption_key")
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", "super_encrypt")
 
 # Generate JWT token for the user
 def generate_token(user_id):
