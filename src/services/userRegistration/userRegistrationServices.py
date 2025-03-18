@@ -1,20 +1,54 @@
-import bcrypt
-from src.services.userRegistration.userRegistrationRepository import UserRepository
+from services.utils import generate_token, decrypt_data, encrypt_data
+from services.userRegistration.userRegistrationRepository import register_user, validate_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
-class UserService:
-    def __init__(self):
-        self.repository = UserRepository()
+# Hash the password before storing it
+def hash_password(password):
+    try:
+        return generate_password_hash(password)
+    except Exception as e:
+        raise Exception(f"Error hashing password: {str(e)}")
 
-    def register_user(self, username, email, password):
-        """Hash password and store user in the database"""
-        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        return self.repository.create_user(username, email, password_hash)
+# Validate the password during login
+def validate_password(stored_password, provided_password):
+    try:
+        return check_password_hash(stored_password, provided_password)
+    except Exception as e:
+        raise Exception(f"Error validating password: {str(e)}")
 
-    def login_user(self, email, password):
-        """Verify user credentials and return authentication response"""
-        user = self.repository.get_user_by_email(email)
+# Register user logic (with bcrypt password hashing)
+def register_user_service(first_name, last_name, email, password):
+    try:
+        # Encrypt the password before storing it
+        encrypted_password = encrypt_data(password)
+        # Call repository to insert the user with encrypted password
+        register_user(first_name, last_name, email, encrypted_password)
+    except Exception as e:
+        raise Exception(f"Error during user registration: {str(e)}")
 
-        if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-            return "✅ Login successful!"
+# Login user logic (using bcrypt to validate password)
+def login_user_service(email, password):
+    try:
+        user = validate_user(email)
+
+        if user:
+            stored_password = user[4]  # Assuming password is in index 4
+            decrypted_password = decrypt_data(stored_password)
+
+            # If password matches, generate JWT token
+            if decrypted_password == password:
+                token = generate_token(user[0])  # user[0] is user_id
+                return token
+            else:
+                return None
         else:
-            return "❌ Invalid email or password"
+            return None
+    except Exception as e:
+        raise Exception(f"Error during user login: {str(e)}")
+
+# Delete user logic
+def delete_user_service(user_id):
+    try:
+        delete_user(user_id)
+    except Exception as e:
+        raise Exception(f"Error during user deletion: {str(e)}")

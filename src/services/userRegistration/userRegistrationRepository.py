@@ -1,44 +1,58 @@
 import mysql.connector
-from database_config import get_db_connection
+from db_config import get_db_connection
 
-def register_user(username, email, password):
-    connection = get_db_connection()
-    cursor = connection.cursor()
+# Register user in the database
+def register_user(first_name, last_name, email, password_hash):
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
 
-    # Check if the email already exists
-    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-    existing_user = cursor.fetchone()
-    
-    if existing_user:
-        print("User already exists!")
-        return False
+        query = """
+        INSERT INTO users (first_name, last_name, email, password_hash)
+        VALUES (%s, %s, %s, %s)
+        """
+        cursor.execute(query, (first_name, last_name, email, password_hash))
+        connection.commit()
 
-    # Insert the new user into the database
-    cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", 
-                   (username, email, password))
-    connection.commit()
-    cursor.close()
-    connection.close()
-    print("User registered successfully!")
-    return True
+        cursor.close()
+        connection.close()
+    except mysql.connector.Error as err:
+        raise Exception(f"Database error occurred: {err}")
+    except Exception as e:
+        raise Exception(f"Unexpected error during user registration: {str(e)}")
 
-def login_user(email, password):
-    connection = get_db_connection()
-    cursor = connection.cursor()
+# Validate user credentials during login
+def validate_user(email):
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
 
-    # Retrieve user from the database
-    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-    user = cursor.fetchone()
+        query = "SELECT * FROM users WHERE email = %s"
+        cursor.execute(query, (email,))
+        user = cursor.fetchone()
 
-    if not user:
-        print("User not found!")
-        return False
+        cursor.close()
+        connection.close()
 
-    # Check if the provided password matches the stored password
-    stored_password = user[3]  # The password is in the 4th column (index 3)
-    if stored_password == password:
-        print("Login successful!")
-        return True
-    else:
-        print("Invalid credentials!")
-        return False
+        return user
+    except mysql.connector.Error as err:
+        raise Exception(f"Database error occurred: {err}")
+    except Exception as e:
+        raise Exception(f"Unexpected error during user validation: {str(e)}")
+
+# Delete user with cascading delete
+def delete_user(user_id):
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        query = "DELETE FROM users WHERE id = %s"
+        cursor.execute(query, (user_id,))
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+    except mysql.connector.Error as err:
+        raise Exception(f"Database error occurred: {err}")
+    except Exception as e:
+        raise Exception(f"Unexpected error during user deletion: {str(e)}")

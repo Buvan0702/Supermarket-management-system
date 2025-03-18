@@ -5,20 +5,16 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-def create_connection():
-    """Establish connection to the MySQL database"""
+# Function to connect to MySQL Database using .env variables
+def get_db_connection():
     try:
         connection = mysql.connector.connect(
-            host=os.getenv("DB_HOST", "localhost"),  # Default to localhost
-            user=os.getenv("DB_USER", "root"),      # Default to root user
-            password=os.getenv("DB_PASSWORD", ""),  # Default to empty password
-            database=os.getenv("DB_NAME", "supermarket_db")  # Default database name
+            host=os.getenv("DB_HOST"),          # Load from .env file
+            user=os.getenv("DB_USER"),          # Load from .env file
+            password=os.getenv("DB_PASSWORD"),  # Load from .env file
+            database=os.getenv("DB_NAME")       # Load from .env file
         )
-
-        if connection.is_connected():
-            print("✅ Successfully connected to MySQL database")
         return connection
     except mysql.connector.Error as err:
-        print(f"❌ Error while connecting to MySQL: {err}")
+        print(f"Error: {err}")
         return None
-
