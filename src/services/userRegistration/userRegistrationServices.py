@@ -46,9 +46,3 @@ def login_user_service(email, password):
     except Exception as e:
         raise Exception(f"Error during user login: {str(e)}")
 
-# Delete user logic
-def delete_user_service(user_id):
-    try:
-        delete_user(user_id)
-    except Exception as e:
-        raise Exception(f"Error during user deletion: {str(e)}")

@@ -1,79 +1,109 @@
-import tkinter as tk
-from tkinter import ttk
+import customtkinter as ctk
+from tkinter import ttk, messagebox
 
-# ---------------- Main Application Window ----------------
-root = tk.Tk()
-root.title("Inventory Management System")
-root.geometry("900x500")  # Fixed window size
-root.resizable(False, False)  # Prevent resizing
-root.configure(bg="#333333")  # Dark gray background
+# ---------------- Initialize Application ----------------
+ctk.set_appearance_mode("light")  # Options: "dark", "light", "system"
+ctk.set_default_color_theme("blue")
 
-# ---------------- Main Container Frame ----------------
-container = tk.Frame(root, bg="white")
-container.place(relx=0.5, rely=0.5, anchor="center", width=750, height=420)
+app = ctk.CTk()
+app.title("Inventory Management System")
+app.geometry("900x500")
+app.resizable(False, False)
+
+# ---------------- Main Container ----------------
+container = ctk.CTkFrame(app, fg_color="white", corner_radius=10)
+container.place(relx=0.5, rely=0.5, anchor="center")
 
 # ---------------- Sidebar (Blue Admin Panel) ----------------
-sidebar = tk.Frame(container, bg="#2563eb", width=180, height=420)
+sidebar = ctk.CTkFrame(container, width=180, height=420, fg_color="#2563eb", corner_radius=0)
 sidebar.pack(side="left", fill="y")
 
 # Sidebar Title
-tk.Label(sidebar, text="Admin Panel", font=("Arial", 14, "bold"), fg="white", bg="#2563eb", anchor="w").pack(pady=20, padx=20)
+title_label = ctk.CTkLabel(sidebar, text="Admin Panel", font=("Arial", 16, "bold"), text_color="white")
+title_label.pack(pady=20)
 
 # Sidebar Buttons
 menu_items = ["Manage Inventory", "Manage Users", "Generate Report", "Logout"]
+
+def menu_click(item):
+    messagebox.showinfo("Navigation", f"You clicked: {item}")
+
 for item in menu_items:
-    btn = tk.Button(sidebar, text=item, font=("Arial", 11), fg="white", bg="#2563eb",
-                    relief="flat", anchor="w", padx=20, activebackground="#1d4ed8", bd=0)
-    btn.pack(fill="x", pady=3)
+    btn = ctk.CTkButton(sidebar, text=item, fg_color="transparent", text_color="white",
+                        corner_radius=5, hover_color="#1d4ed8",
+                        command=lambda i=item: menu_click(i))
+    btn.pack(fill="x", pady=5, padx=10)
 
 # ---------------- Main Content ----------------
-main_content = tk.Frame(container, bg="#f2f2f2")
-main_content.pack(side="right", fill="both", expand=True, padx=20, pady=20)
+main_frame = ctk.CTkFrame(container, fg_color="white")
+main_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
 # Header
-tk.Label(main_content, text="Inventory Management", font=("Arial", 16, "bold"), fg="#2563eb", bg="#f2f2f2").pack(anchor="w")
+header_label = ctk.CTkLabel(main_frame, text="Inventory Management", font=("Arial", 18, "bold"), text_color="#2563eb")
+header_label.pack(anchor="w", pady=5)
 
 # ---------------- Add New Item Section ----------------
-add_item_frame = tk.Frame(main_content, bg="white", relief="ridge", bd=1)
+add_item_frame = ctk.CTkFrame(main_frame, fg_color="white", border_width=1, corner_radius=5)
 add_item_frame.pack(fill="x", pady=10, padx=5, ipadx=5, ipady=10)
 
-tk.Label(add_item_frame, text="Add New Item", font=("Arial", 11, "bold"), bg="white", pady=5, padx=10).pack(anchor="w")
+ctk.CTkLabel(add_item_frame, text="Add New Item", font=("Arial", 13, "bold"), text_color="black").pack(anchor="w", padx=10)
 
-entry_style = {"font": ("Arial", 11), "bg": "#f8f8f8", "relief": "solid", "bd": 1}
+# Custom placeholder behavior for entries
+def on_entry_click(entry, placeholder):
+    if entry.get() == placeholder:
+        entry.delete(0, "end")
+        entry.configure(text_color="black")
 
-item_name_entry = tk.Entry(add_item_frame, **entry_style)
-item_name_entry.insert(0, "Item Name")
-item_name_entry.pack(fill="x", padx=10, pady=2, ipady=5)
+def on_focus_out(entry, placeholder):
+    if not entry.get():
+        entry.insert(0, placeholder)
+        entry.configure(text_color="gray")
 
-price_entry = tk.Entry(add_item_frame, **entry_style)
-price_entry.insert(0, "Price ($)")
-price_entry.pack(fill="x", padx=10, pady=2, ipady=5)
+# Input Fields
+placeholders = ["Item Name", "Price ($)", "Stock Quantity"]
+entries = []
 
-stock_entry = tk.Entry(add_item_frame, **entry_style)
-stock_entry.insert(0, "Stock Quantity")
-stock_entry.pack(fill="x", padx=10, pady=2, ipady=5)
+for placeholder in placeholders:
+    entry = ctk.CTkEntry(add_item_frame, width=300)
+    entry.insert(0, placeholder)
+    entry.configure(text_color="gray")
+    entry.bind("<FocusIn>", lambda e, ent=entry, ph=placeholder: on_entry_click(ent, ph))
+    entry.bind("<FocusOut>", lambda e, ent=entry, ph=placeholder: on_focus_out(ent, ph))
+    entry.pack(fill="x", padx=10, pady=5, ipady=3)
+    entries.append(entry)
 
-add_item_btn = tk.Button(add_item_frame, text="Add Item", font=("Arial", 11, "bold"), bg="#16a34a", fg="white",
-                         relief="flat", cursor="hand2", activebackground="#15803d")
+# Function to add item
+def add_item():
+    item_name, price, stock = [entry.get() for entry in entries]
+    if item_name in placeholders or price in placeholders or stock in placeholders:
+        messagebox.showwarning("Input Error", "Please fill out all fields.")
+        return
+    
+    tree.insert("", "end", values=(item_name, f"${price}", stock, "Edit | Delete"))
+    messagebox.showinfo("Success", "Item added successfully!")
+
+# Add Item Button
+add_item_btn = ctk.CTkButton(add_item_frame, text="Add Item", font=("Arial", 12, "bold"), fg_color="#16a34a",
+                             hover_color="#15803d", command=add_item)
 add_item_btn.pack(pady=10, padx=10, ipadx=10)
 
 # ---------------- Existing Inventory Section ----------------
-inventory_frame = tk.Frame(main_content, bg="#f2f2f2")
+inventory_frame = ctk.CTkFrame(main_frame, fg_color="white")
 inventory_frame.pack(fill="x", pady=10)
 
-tk.Label(inventory_frame, text="Existing Inventory", font=("Arial", 11, "bold"), bg="#f2f2f2").pack(anchor="w")
+ctk.CTkLabel(inventory_frame, text="Existing Inventory", font=("Arial", 13, "bold"), text_color="black").pack(anchor="w", padx=10)
 
 # Inventory Table
-table_frame = tk.Frame(inventory_frame, bg="white", relief="ridge", bd=1)
-table_frame.pack(fill="x", pady=5, padx=5)
+table_frame = ctk.CTkFrame(inventory_frame, fg_color="white", border_width=1, corner_radius=5)
+table_frame.pack(fill="both", pady=5, padx=5, expand=True)
 
 columns = ("Item Name", "Price", "Stock", "Actions")
 tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=3)
 
 # Define column headings
 tree.heading("Item Name", text="Item Name")
-tree.heading("Price", text="Price")
-tree.heading("Stock", text="Stock")
+tree.heading("Price", text="Price ($)")
+tree.heading("Stock", text="Stock Quantity")
 tree.heading("Actions", text="Actions")
 
 # Define column widths
@@ -84,18 +114,19 @@ tree.column("Actions", width=200, anchor="center")
 
 # Insert dummy data
 data = [
-    ("Fresh Apples", "$2.00", "50"),
-    ("Organic Bananas", "$1.50", "30")
+    ("Fresh Apples", "$2.00", "50", "Edit | Delete"),
+    ("Organic Bananas", "$1.50", "30", "Edit | Delete")
 ]
 
 for item in data:
     tree.insert("", "end", values=item)
 
+# Scrollbar
+scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
+tree.configure(yscroll=scrollbar.set)
+scrollbar.pack(side="right", fill="y")
+
 tree.pack(fill="x")
 
-# Buttons for actions
-for row in tree.get_children():
-    tree.insert(row, "end", values=(" ", " ", " ", "Edit  Delete"))
-
 # ---------------- Run Application ----------------
-root.mainloop()
+app.mainloop()

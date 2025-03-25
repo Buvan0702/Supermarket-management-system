@@ -1,42 +1,53 @@
-import tkinter as tk
-from tkinter import ttk
+import customtkinter as ctk
 from PIL import Image, ImageTk
+from tkinter import messagebox
 
-# ---------------- Main Application Window ----------------
-root = tk.Tk()
-root.title("SuperMarket Dashboard")
-root.geometry("900x600")  # Adjusted height for proper spacing
-root.resizable(False, False)  # Prevent resizing
-root.configure(bg="#f2f2f2")  # Light gray background
+# ---------------- Initialize Application ----------------
+ctk.set_appearance_mode("light")  # Can be "dark", "light", or "system"
+ctk.set_default_color_theme("blue")  # "blue", "green", "dark-blue"
 
-# ---------------- Sidebar (Blue Navigation Menu) ----------------
-sidebar = tk.Frame(root, bg="#2563eb", width=180, height=600)
+app = ctk.CTk()
+app.title("SuperMarket Dashboard")
+app.geometry("900x600")
+app.resizable(False, False)
+
+# ---------------- Sidebar (Navigation Menu) ----------------
+sidebar = ctk.CTkFrame(app, width=180, height=600, corner_radius=0, fg_color="#2563eb")
 sidebar.pack(side="left", fill="y")
 
 # Sidebar Title
-tk.Label(sidebar, text="SuperMarket", font=("Arial", 14, "bold"), fg="white", bg="#2563eb", anchor="w").pack(pady=20, padx=20)
+title_label = ctk.CTkLabel(sidebar, text="SuperMarket", font=("Arial", 18, "bold"), text_color="white")
+title_label.pack(pady=20)
 
 # Sidebar Buttons
 menu_items = ["Home", "Cart", "Previous Orders", "Logout"]
+
+def menu_click(item):
+    messagebox.showinfo("Navigation", f"You clicked: {item}")
+
 for item in menu_items:
-    btn = tk.Button(sidebar, text=item, font=("Arial", 11), fg="white", bg="#2563eb",
-                    relief="flat", anchor="w", padx=20, activebackground="#1d4ed8", bd=0)
-    btn.pack(fill="x", pady=3)
+    btn = ctk.CTkButton(sidebar, text=item, fg_color="transparent", text_color="white",
+                        corner_radius=5, hover_color="#1d4ed8",
+                        command=lambda i=item: menu_click(i))
+    btn.pack(fill="x", pady=5, padx=10)
 
 # ---------------- Main Content ----------------
-main_content = tk.Frame(root, bg="#f2f2f2")
-main_content.pack(side="right", fill="both", expand=True, padx=20, pady=20)
+main_frame = ctk.CTkFrame(app, fg_color="white")
+main_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
 # Header
-tk.Label(main_content, text="Welcome to the SuperMarket", font=("Arial", 16, "bold"), bg="#f2f2f2").pack(anchor="w")
+header_label = ctk.CTkLabel(main_frame, text="Welcome to the SuperMarket",
+                            font=("Arial", 18, "bold"), text_color="black")
+header_label.pack(anchor="w", pady=10)
 
 # ---------------- Available Items Section ----------------
-items_section = tk.Frame(main_content, bg="#f2f2f2")
+items_section = ctk.CTkFrame(main_frame, fg_color="white")
 items_section.pack(fill="x", pady=10)
 
-tk.Label(items_section, text="Available Items", font=("Arial", 12, "bold"), bg="#f2f2f2").pack(anchor="w")
+items_label = ctk.CTkLabel(items_section, text="Available Items", font=("Arial", 14, "bold"), text_color="black")
+items_label.pack(anchor="w", pady=5)
 
-items_frame = tk.Frame(items_section, bg="#f2f2f2")
+items_frame = ctk.CTkFrame(items_section, fg_color="white")
 items_frame.pack(fill="x", pady=10)
 
 # Product Details
@@ -48,43 +59,45 @@ products = [
 
 # Displaying Items
 for product in products:
-    item_card = tk.Frame(items_frame, bg="white", width=200, height=220, relief="ridge", bd=1)
+    item_card = ctk.CTkFrame(items_frame, fg_color="white", border_width=1, corner_radius=10)
     item_card.pack(side="left", padx=10, pady=5)
 
     try:
         img = Image.open(product["image"])
         img = img.resize((100, 100), Image.Resampling.LANCZOS)
         product_img = ImageTk.PhotoImage(img)
-        img_label = tk.Label(item_card, image=product_img, bg="white")
+        img_label = ctk.CTkLabel(item_card, image=product_img, text="")
         img_label.image = product_img  # Keep reference
         img_label.pack(pady=5)
     except:
-        tk.Label(item_card, text="[Image]", font=("Arial", 12), bg="white").pack(pady=5)
+        ctk.CTkLabel(item_card, text="[No Image]", font=("Arial", 12)).pack(pady=5)
 
-    tk.Label(item_card, text=product["name"], font=("Arial", 10, "bold"), bg="white").pack()
-    tk.Label(item_card, text=product["price"], font=("Arial", 10), fg="gray", bg="white").pack()
+    ctk.CTkLabel(item_card, text=product["name"], font=("Arial", 12, "bold"), text_color="black").pack()
+    ctk.CTkLabel(item_card, text=product["price"], font=("Arial", 12), text_color="gray").pack()
 
-    add_cart_btn = tk.Button(item_card, text="Add to Cart", font=("Arial", 10, "bold"), bg="#2563eb", fg="white",
-                             relief="flat", cursor="hand2", width=12, activebackground="#1d4ed8")
+    add_cart_btn = ctk.CTkButton(item_card, text="Add to Cart", fg_color="#2563eb",
+                                 hover_color="#1d4ed8", width=100)
     add_cart_btn.pack(pady=10)
 
 # ---------------- Checkout Section ----------------
-checkout_section = tk.Frame(main_content, bg="#f2f2f2")
+checkout_section = ctk.CTkFrame(main_frame, fg_color="white")
 checkout_section.pack(fill="x", pady=10)
 
-tk.Label(checkout_section, text="Checkout", font=("Arial", 12, "bold"), bg="#f2f2f2").pack(anchor="w")
+checkout_label = ctk.CTkLabel(checkout_section, text="Checkout", font=("Arial", 14, "bold"), text_color="black")
+checkout_label.pack(anchor="w", pady=5)
 
-checkout_btn = tk.Button(checkout_section, text="Proceed to Checkout", font=("Arial", 12, "bold"), bg="#16a34a", fg="white",
-                         relief="flat", cursor="hand2", width=20, activebackground="#15803d")
+checkout_btn = ctk.CTkButton(checkout_section, text="Proceed to Checkout", fg_color="#16a34a",
+                             hover_color="#15803d", width=200)
 checkout_btn.pack(pady=10)
 
 # ---------------- Previous Orders Section ----------------
-orders_section = tk.Frame(main_content, bg="#f2f2f2")
+orders_section = ctk.CTkFrame(main_frame, fg_color="white")
 orders_section.pack(fill="x", pady=10)
 
-tk.Label(orders_section, text="Previous Orders", font=("Arial", 12, "bold"), bg="#f2f2f2").pack(anchor="w")
+orders_label = ctk.CTkLabel(orders_section, text="Previous Orders", font=("Arial", 14, "bold"), text_color="black")
+orders_label.pack(anchor="w", pady=5)
 
-orders_frame = tk.Frame(orders_section, bg="white", relief="ridge", bd=1)
+orders_frame = ctk.CTkFrame(orders_section, fg_color="white")
 orders_frame.pack(fill="x", pady=5)
 
 orders = [
@@ -94,11 +107,11 @@ orders = [
 ]
 
 for order in orders:
-    order_row = tk.Frame(orders_frame, bg="white")
+    order_row = ctk.CTkFrame(orders_frame, fg_color="white")
     order_row.pack(fill="x", padx=10, pady=5)
 
-    tk.Label(order_row, text=order["name"], font=("Arial", 10), bg="white", anchor="w").pack(side="left")
-    tk.Label(order_row, text=order["price"], font=("Arial", 10, "bold"), bg="white", anchor="e").pack(side="right")
+    ctk.CTkLabel(order_row, text=order["name"], font=("Arial", 12), text_color="black").pack(side="left")
+    ctk.CTkLabel(order_row, text=order["price"], font=("Arial", 12, "bold"), text_color="black").pack(side="right")
 
 # ---------------- Run Application ----------------
-root.mainloop()
+app.mainloop()
